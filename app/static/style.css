@@ -1,0 +1,28 @@
+.navbar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #263343;
+    padding: 20px 18px;
+}
+
+body{
+    margin: 0;
+    background-color: lightgray;
+}
+
+.sidebar{
+    width: 300px;
+    background-color: white;
+    position: fixed;
+    height: 100%;
+}
+
+.result-title{
+    text-align: center;
+    margin-top: 20px ;
+    border-bottom: solid 1px black;
+    border-top: solid 1px black;
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
