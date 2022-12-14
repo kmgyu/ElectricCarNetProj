@@ -1,28 +1,44 @@
-.navbar{
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
+.navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-color: #263343;
     padding: 20px 18px;
+    position: fixed;
 }
 
-body{
+body {
     margin: 0;
     background-color: lightgray;
 }
 
-.sidebar{
+.sidebar {
     width: 300px;
     background-color: white;
     position: fixed;
     height: 100%;
 }
 
-.result-title{
+.result-title {
     text-align: center;
-    margin-top: 20px ;
+    margin-top: 20px;
     border-bottom: solid 1px black;
     border-top: solid 1px black;
     padding-top: 7px;
     padding-bottom: 7px;
+}
+
+.detail-button {
+    width: 100%;
+    padding: 10px 5px;
+    border: 0;
+    border-bottom: solid 1px black;
+    color: white;
+    background-color: #263343;
 }
