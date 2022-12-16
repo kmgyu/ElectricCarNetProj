@@ -73,6 +73,18 @@
             overflow-y: scroll;
         }
 
+        .detail-button {
+            width: 100%;
+            padding: 10px 5px;
+            border: 0;
+            border-bottom: solid 1px black;
+            color: white;
+            background-color: #263343;
+        }
+
+        .result-box{
+            padding: 8px;
+        }
     </style>
 </head>
 <body>
@@ -145,111 +157,19 @@
             <h4>검색결과</h4>
 
         </div>
-        <div class="result-list">
+        <div class="result-list" id="list">
             <div class="result-box">
-                충전소 정보가 들어갈 자리
+                <div class="charge-name">충전소 명</div>
+                <div class="business-tel">T. 운영기관 연락처</div>
+                <div class="charge-adress">주소 : @@@@@@@@@@@@@</div>
+                <div class="business-name">운영 기관</div>
+                <div class="use-time">운영 시간</div>
             </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
+            <button class="detail-button">상세보기</button>
+            <div class="detail-box" id="detail-box-1"
+                 style="border:solid 1px black; padding:20px 3px; display: none;">
+                세부 내용
             </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
-            <div class="result-box">
-                충전소 정보가 들어갈 자리
-            </div>
-            <button class="detail-button">자세히</button>
 
 
         </div>
@@ -277,12 +197,12 @@
     $(function () {
         $('#sidebar_button').click(function () {
             if ($("#side").css("display") == "none") {
-                document.getElementById("side").style.display="block";
-                document.getElementById("map-section").style.left= "280px";
+                document.getElementById("side").style.display = "block";
+                document.getElementById("map-section").style.left = "280px";
                 document.getElementById("map-section").style.width = "-webkit-calc(100% - 280px);";
             } else if ($("#side").css("display") != "none") {
-                document.getElementById("side").style.display="none";
-                document.getElementById("map-section").style.left= "0px";
+                document.getElementById("side").style.display = "none";
+                document.getElementById("map-section").style.left = "0px";
                 document.getElementById("map-section").style.width = "100%";
             }
         });
@@ -488,11 +408,20 @@
             success: function (response, data) {
                 let chargers = response.items;
                 console.log(response);
-                for(let i = 0 ; i < chargers.item.length ; i++){
-                    console.log(chargers.item[i]);
-                    console.log(chargers.item[i].statNm);
-                    console.log(chargers.item[i].addr);
+                let result_list_html = "";
+                for (let i = 0; i < chargers.item.length; i++) {
+
+                    result_list_html += "<div class='result-box' id='"+ chargers.item[i].statId +"'>";
+                    result_list_html += "<div class='charge-name'>" + chargers.item[i].statNm + "</div>";
+                    result_list_html += "<div class='business-tel'>T. " + chargers.item[i].busiCall + "</div>";
+                    result_list_html += "<div class='charge-adress'>주소 : " + chargers.item[i].addr + "</div>";
+                    result_list_html += "<div class='business-name'>기관 : " + chargers.item[i].bnm + "</div>";
+                    result_list_html += "<div class='use-time'>사용 시간 : " + chargers.item[i].useTime + "</div></div>";
+                    result_list_html += "<button class='detail-button'>상세보기</button>";
+                    result_list_html += "<div class='detail-box' id='detail-box-1' " +
+                        "style='border:solid 1px black; padding:20px 3px; display: none;'>세부 내용 </div>";
                 }
+                document.getElementById("list").innerHTML = result_list_html;
             },
             error: function (request, status, error) {
                 alert("실패");
