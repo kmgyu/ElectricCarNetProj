@@ -82,7 +82,7 @@
             background-color: #263343;
         }
 
-        .result-box{
+        .result-box {
             padding: 8px;
         }
     </style>
@@ -407,11 +407,26 @@
 
             success: function (response, data) {
                 let chargers = response.items;
-                console.log(response);
+                console.log(chargers.item);
+
+                const charger_bundle = chargers.item.reduce((result, item) => {
+                    const {statId} = item;
+                    if (result[statId] === undefined) {
+                        result[statId] = [];
+                    }
+                    result[statId].push(item);
+                    return result;
+
+                }, {});
+
+                console.log(charger_bundle);
+
+                let keys = Object.keys(charger_bundle);
+
                 let result_list_html = "";
                 for (let i = 0; i < chargers.item.length; i++) {
 
-                    result_list_html += "<div class='result-box' id='"+ chargers.item[i].statId +"'>";
+                    result_list_html += "<div class='result-box' id='" + chargers.item[i].statId + "'>";
                     result_list_html += "<div class='charge-name'>" + chargers.item[i].statNm + "</div>";
                     result_list_html += "<div class='business-tel'>T. " + chargers.item[i].busiCall + "</div>";
                     result_list_html += "<div class='charge-adress'>주소 : " + chargers.item[i].addr + "</div>";
