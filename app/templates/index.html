@@ -158,20 +158,9 @@
 
         </div>
         <div class="result-list" id="list">
-            <div class="result-box">
-                <div class="charge-name">충전소 명</div>
-                <div class="business-tel">T. 운영기관 연락처</div>
-                <div class="charge-adress">주소 : @@@@@@@@@@@@@</div>
-                <div class="business-name">운영 기관</div>
-                <div class="use-time">운영 시간</div>
+            <div class="result-box" style="text-align: center">
+                위쪽의 필터에서 검색하세요
             </div>
-            <button class="detail-button">상세보기</button>
-            <div class="detail-box" id="detail-box-1"
-                 style="border:solid 1px black; padding:20px 3px; display: none;">
-                세부 내용
-            </div>
-
-
         </div>
 
 
@@ -409,8 +398,8 @@
                 let chargers = response.items;
                 console.log(chargers.item);
 
-                const charger_bundle = chargers.item.reduce((result, item) => {
-                    const {statId} = item;
+                let charger_bundle = chargers.item.reduce((result, item) => {
+                    let {statId} = item;
                     if (result[statId] === undefined) {
                         result[statId] = [];
                     }
@@ -420,21 +409,34 @@
                 }, {});
 
                 console.log(charger_bundle);
+                for(var q in charger_bundle){
+                    console.log(charger_bundle[q][0].statNm);
+                    for(var value of charger_bundle[q]){
+                        console.log(value.chgerType);
+                    }
+                }
 
-                let keys = Object.keys(charger_bundle);
+                let charger_keys = Object.keys(charger_bundle);
 
                 let result_list_html = "";
-                for (let i = 0; i < chargers.item.length; i++) {
 
-                    result_list_html += "<div class='result-box' id='" + chargers.item[i].statId + "'>";
-                    result_list_html += "<div class='charge-name'>" + chargers.item[i].statNm + "</div>";
-                    result_list_html += "<div class='business-tel'>T. " + chargers.item[i].busiCall + "</div>";
-                    result_list_html += "<div class='charge-adress'>주소 : " + chargers.item[i].addr + "</div>";
-                    result_list_html += "<div class='business-name'>기관 : " + chargers.item[i].bnm + "</div>";
-                    result_list_html += "<div class='use-time'>사용 시간 : " + chargers.item[i].useTime + "</div></div>";
-                    result_list_html += "<button class='detail-button'>상세보기</button>";
-                    result_list_html += "<div class='detail-box' id='detail-box-1' " +
-                        "style='border:solid 1px black; padding:20px 3px; display: none;'>세부 내용 </div>";
+                for(let k = 0 ; k<charger_keys.length ; k++){
+                    result_list_html += `<div class='result-box' id='${charger_bundle[charger_keys[k]][0].statId}'>`;
+                    result_list_html += `<div class='charge-name'>${charger_bundle[charger_keys[k]][0].statNm}</div>`;
+                    result_list_html += `<div class='business-tel'>T. ${charger_bundle[charger_keys[k]][0].busiCall}</div>`;
+                    result_list_html += `<div class='charge-adress'>주소 : ${charger_bundle[charger_keys[k]][0].addr}</div>`;
+                    result_list_html += `<div class='business-name'>기관 : ${charger_bundle[charger_keys[k]][0].bnm}</div>`;
+                    result_list_html += `<div class='use-time'>사용 시간 : ${charger_bundle[charger_keys[k]][0].useTime}</div></div>`;
+                    result_list_html += `<button class='detail-button' id='detail-button-${charger_bundle[charger_keys[k]][0].statId}'>상세보기</button>`;
+                    result_list_html += `<div class='detail-box' id='detail-box-${charger_bundle[charger_keys[k]][0].statId}' style='border:solid 1px black; padding:20px 3px; display: none;'>`;
+                    for(let n = 0 ; n < charger_bundle[charger_keys[k]].length ; n++){
+                        console.log("충전소 형태");
+                        console.log(charger_bundle[charger_keys[k]][n].chgerType);
+                        console.log("충전기 상태");
+                        console.log(charger_bundle[charger_keys[k]][n].stat);
+                    }
+                    result_list_html += "</div>";
+                    console.log("");
                 }
                 document.getElementById("list").innerHTML = result_list_html;
             },
