@@ -197,6 +197,14 @@
         });
     });
 
+    function showDetail(id){
+        if(document.querySelector(`#detail-box-${id}`).style.display == "none"){
+            document.getElementById(`detail-box-${id}`).style.display = "block";
+        } else if(document.querySelector(`#detail-box-${id}`).style.display != "none"){
+            document.getElementById(`detail-box-${id}`).style.display = "none";
+        }
+    }
+    // 수정 필요
 
     function goonguCahnge() {
         var seoul = ["시군구", "강남구", "강동구", "강북구", "강서구", "관악구", "광진구",
@@ -427,13 +435,14 @@
                     result_list_html += `<div class='charge-adress'>주소 : ${charger_bundle[charger_keys[k]][0].addr}</div>`;
                     result_list_html += `<div class='business-name'>기관 : ${charger_bundle[charger_keys[k]][0].bnm}</div>`;
                     result_list_html += `<div class='use-time'>사용 시간 : ${charger_bundle[charger_keys[k]][0].useTime}</div></div>`;
-                    result_list_html += `<button class='detail-button' id='detail-button-${charger_bundle[charger_keys[k]][0].statId}'>상세보기</button>`;
+                    result_list_html += `<button class='detail-button' id='detail-button-${charger_bundle[charger_keys[k]][0].statId}' onclick="showDetail(${charger_bundle[charger_keys[k]][0].statId})">상세보기</button>`;
                     result_list_html += `<div class='detail-box' id='detail-box-${charger_bundle[charger_keys[k]][0].statId}' style='border:solid 1px black; padding:20px 3px; display: none;'>`;
                     for(let n = 0 ; n < charger_bundle[charger_keys[k]].length ; n++){
                         console.log("충전소 형태");
                         console.log(charger_bundle[charger_keys[k]][n].chgerType);
                         console.log("충전기 상태");
                         console.log(charger_bundle[charger_keys[k]][n].stat);
+                        result_list_html += `<div>${n+1}.  ${charger_bundle[charger_keys[k]][n].stat} ${charger_bundle[charger_keys[k]][n].chgerType}</div>`;
                     }
                     result_list_html += "</div>";
                     console.log("");
