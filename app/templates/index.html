@@ -182,6 +182,26 @@
 
     var map = new kakao.maps.Map(container, options); //지도 생성 및 객체 리턴
 
+    const charge_state = {
+        '0' : "알수없음",
+        '1' : "통신이상",
+        '2' : "사용가능",
+        '3' : "충전중",
+        '4' : "운영중지",
+        '5' : "점검중"
+    }
+
+    const charge_type = {
+        "01" : "DC 차데모",
+        "02" : "AC 완속",
+        "03" : "DC 차데모 + AC3 상",
+        "04" : "DC 콤보",
+        "05" : "DC 차데모 + DC 콤보",
+        "06" : "DC 차데모 + AC3 상 + DC 콤보 ",
+        "07" : "AC3 상",
+        "89" : "H2"
+    }
+
 
     $(function () {
         $('#sidebar_button').click(function () {
@@ -199,8 +219,12 @@
 
     function showDetail(id){
         console.log(id.id);
+        if(document.getElementById(`detail-box-${id.id}`).style.display == "none"){
+            document.getElementById(`detail-box-${id.id}`).style.display = "block";
+        } else if(document.getElementById(`detail-box-${id.id}`).style.display != "none"){
+            document.getElementById(`detail-box-${id.id}`).style.display = "none";
+        }
     }
-    // 수정 필요
 
     function goonguCahnge() {
         var seoul = ["시군구", "강남구", "강동구", "강북구", "강서구", "관악구", "광진구",
@@ -400,7 +424,6 @@
 
             success: function (response, data) {
                 let chargers = response.items;
-                console.log(chargers.item);
 
                 let charger_bundle = chargers.item.reduce((result, item) => {
                     let {statId} = item;
@@ -414,9 +437,7 @@
 
                 console.log(charger_bundle);
                 for(var q in charger_bundle){
-                    console.log(charger_bundle[q][0].statNm);
                     for(var value of charger_bundle[q]){
-                        console.log(value.chgerType);
                     }
                 }
 
@@ -425,6 +446,7 @@
                 let result_list_html = "";
 
                 for(let k = 0 ; k<charger_keys.length ; k++){
+
                     result_list_html += `<div class='result-box' id='${charger_bundle[charger_keys[k]][0].statId}'>`;
                     result_list_html += `<div class='charge-name'>${charger_bundle[charger_keys[k]][0].statNm}</div>`;
                     result_list_html += `<div class='business-tel'>T. ${charger_bundle[charger_keys[k]][0].busiCall}</div>`;
@@ -433,11 +455,13 @@
                     result_list_html += `<div class='use-time'>사용 시간 : ${charger_bundle[charger_keys[k]][0].useTime}</div></div>`;
                     result_list_html += `<button class='detail-button' id='detail-button-${charger_bundle[charger_keys[k]][0].statId}' onclick="showDetail(${charger_bundle[charger_keys[k]][0].statId})">상세보기</button>`;
                     result_list_html += `<div class='detail-box' id='detail-box-${charger_bundle[charger_keys[k]][0].statId}' style='border:solid 1px black; padding:20px 3px; display: none;'>`;
+
                     for(let n = 0 ; n < charger_bundle[charger_keys[k]].length ; n++){
-                        console.log("충전소 형태");
-                        console.log(charger_bundle[charger_keys[k]][n].chgerType);
+                        console.log("충전기 타입");
+                        console.log(charge_type[charger_bundle[charger_keys[k]][n].chgerType]);
                         console.log("충전기 상태");
-                        console.log(charger_bundle[charger_keys[k]][n].stat);
+                        console.log(charge_state[charger_bundle[charger_keys[k]][n].stat]);
+                        console.log("");
                         result_list_html += `<div>${n+1}.  ${charger_bundle[charger_keys[k]][n].stat} ${charger_bundle[charger_keys[k]][n].chgerType}</div>`;
                     }
                     result_list_html += "</div>";
