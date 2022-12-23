@@ -202,6 +202,8 @@
         "89": "H2"
     }
 
+    var posmarkers = [];
+
 
     $(function () {
         $('#sidebar_button').click(function () {
@@ -444,6 +446,11 @@
 
                 let result_list_html = "";
 
+                for(let n = 0 ; n < posmarkers.length ; n++){
+                    posmarkers[n].setMap(null);
+                }
+                posmarkers = [];
+
                 function panTo() {
                     // 이동할 위도 경도 위치를 생성합니다
                     var moveLatLon = new kakao.maps.LatLng(charger_bundle[charger_keys[0]][0].lat, charger_bundle[charger_keys[0]][0].lng);
@@ -453,15 +460,14 @@
                     map.panTo(moveLatLon);
                 }
 
+                var position = [];
+
                 for (let k = 0; k < charger_keys.length; k++) {
-
-                    var marker = new kakao.maps.Marker({
-                        map: map, // 마커를 표시할 지도
-                        position: new kakao.maps.LatLng(charger_bundle[charger_keys[k]][0].lat, charger_bundle[charger_keys[k]][0].lng), // 마커를 표시할 위치
-                        title: charger_bundle[charger_keys[k]][0].statNm, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
-                    });
-                    marker.setMap(map)
-
+                    var gb_position = {
+                        content: `<div class="ifw"><h5>${charger_bundle[charger_keys[k]][0].statNm}</h5><h6>${charger_bundle[charger_keys[k]][0].addr}</h6>`,
+                        latlng: new kakao.maps.LatLng(charger_bundle[charger_keys[k]][0].lat, charger_bundle[charger_keys[k]][0].lng)
+                    }
+                    position.push(gb_position)
 
                     result_list_html += `<div class='result-box' id='${charger_bundle[charger_keys[k]][0].statId}'>`;
                     result_list_html += `<div class='charge-name'>${charger_bundle[charger_keys[k]][0].statNm}</div>`;
@@ -477,6 +483,19 @@
                     }
                     result_list_html += "</div>";
                 }
+
+                for (var i = 0; i < position.length; i++) {
+
+                    // 마커를 생성합니다
+                    var marker = new kakao.maps.Marker({
+                        map: map, // 마커를 표시할 지도
+                        position: position[i].latlng, // 마커를 표시할 위치
+                        title: position[i].content, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+
+                    });
+                    posmarkers.push(marker);
+                }
+
                 panTo();
                 document.getElementById("list").innerHTML = result_list_html;
             },
