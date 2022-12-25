@@ -149,7 +149,7 @@
                 </div>
                 <div class="search-button-box" style="margin-top: 20px;display: flex; justify-content: space-around ">
                     <button type="submit" id="search-button">검색하기</button>
-                    <button>초기화</button>
+                    <button id="clear-button">초기화</button>
                 </div>
             </div>
         </div>
@@ -396,6 +396,13 @@
 
         }
     }
+
+
+    $('#clear-button').click(function(){
+       document.getElementById("sido-select").value = '';
+       document.getElementById("goongu-select").value = '';
+       document.getElementById("charger-type-select").value = '';
+    });
 
 
     $("#search-button").click(function () {
