@@ -82,6 +82,11 @@
             background-color: #263343;
         }
 
+        .detail-button:hover{
+            cursor: pointer;
+            background-color: black;
+        }
+
         .buttons {
             padding: 7px 10px;
             border: 0;
@@ -90,8 +95,20 @@
             border-radius: 8px;
         }
 
+        .buttons:hover{
+            cursor:pointer;
+        }
+
+        .fa-bars:hover{
+            cursor:pointer;
+        }
+
         .result-box {
             padding: 8px;
+        }
+
+        .result-box:hover{
+            background-color: lightgray;
         }
 
         select {
@@ -105,7 +122,6 @@
             font-size: 10px;
             line-height: 16px;
         }
-
     </style>
 </head>
 <body>
@@ -454,18 +470,21 @@
 
             success: function (response, data) {
                 let chargers = response.items;
-                for(let x = 0 ; x < chargers.item.length ; x++){
-                    if(parseInt(chargers.item[x].chgerType) != parseInt(charger_type)){
-                        chargers.item.splice(x,1);
-                        x--;
+
+                if (charger_type != "") {
+                    for (let x = 0; x < chargers.item.length; x++) {
+                        if (parseInt(chargers.item[x].chgerType) != parseInt(charger_type)) {
+                            chargers.item.splice(x, 1);
+                            x--;
+                        }
                     }
                 }
 
+
                 console.log(chargers.item);
-                if(Array.isArray(chargers.item) && chargers.item.length === 0){
+                if (Array.isArray(chargers.item) && chargers.item.length === 0) {
                     alert("일치하는 충전소가 없습니다");
                 }
-
 
 
                 let charger_bundle = chargers.item.reduce((result, item) => {
