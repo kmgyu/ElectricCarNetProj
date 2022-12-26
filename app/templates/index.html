@@ -67,9 +67,9 @@
         }
 
         .result-list {
-            height: calc(100vh - 306px);
-            height: -webkit-calc(100vh - 306px);
-            height: -moz-calc(100vh - 306px);
+            height: calc(100vh - 352px);
+            height: -webkit-calc(100vh - 352px);
+            height: -moz-calc(100vh - 352px);
             overflow-y: scroll;
         }
 
@@ -82,26 +82,47 @@
             background-color: #263343;
         }
 
+        .buttons {
+            padding: 7px 10px;
+            border: 0;
+            color: white;
+            background-color: #263343;
+            border-radius: 8px;
+        }
+
         .result-box {
             padding: 8px;
         }
+
+        select {
+            border: 1px solid #C4C4C4;
+            box-sizing: border-box;
+            border-radius: 10px;
+            padding: 7px 10px;
+            font-family: 'Nanumgothic';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 10px;
+            line-height: 16px;
+        }
+
     </style>
 </head>
 <body>
 <div id="top">
     <div class="sidebar_button" id="sidebar_button">
-        <i class="fa-solid fa-bars"></i>
+        <i class="fa-solid fa-bars" style="color: white"></i>
     </div>
-    <div class="navbar_logo">
-        Logo
+    <div class="navbar_logo" style="color: white; font-size: x-large; font-weight: bold">
+        전기차 충전소 정보
     </div>
     <div></div>
 </div>
 <div id="bottom">
     <div class="side-bar" id="side">
-        <div class="search-box" style="border:solid 1px black; border-radius: 5px; padding:5px">
+        <div class="search-box" style="padding:7px">
             <div clas="location-area" style="margin-top: 5px">
-                <div class="location-title">
+                <div class="location-title" style="padding-bottom: 5px">
                     지역 선택
                 </div>
                 <div class="location-select">
@@ -131,7 +152,7 @@
                 </div>
             </div>
             <div class="charger-type-area" style="margin-top: 15px">
-                <div class="charger-type-title">
+                <div class="charger-type-title" style="padding-bottom: 5px">
                     충전기 타입
                 </div>
                 <div class="charger-type-select">
@@ -148,8 +169,8 @@
                     </select>
                 </div>
                 <div class="search-button-box" style="margin-top: 20px;display: flex; justify-content: space-around ">
-                    <button type="submit" id="search-button">검색하기</button>
-                    <button id="clear-button">초기화</button>
+                    <button type="submit" id="search-button" class="buttons">검색하기</button>
+                    <button id="clear-button" class="buttons">초기화</button>
                 </div>
             </div>
         </div>
@@ -398,10 +419,10 @@
     }
 
 
-    $('#clear-button').click(function(){
-       document.getElementById("sido-select").value = '';
-       document.getElementById("goongu-select").value = '';
-       document.getElementById("charger-type-select").value = '';
+    $('#clear-button').click(function () {
+        document.getElementById("sido-select").value = '';
+        document.getElementById("goongu-select").value = '';
+        document.getElementById("charger-type-select").value = '';
     });
 
 
@@ -433,6 +454,19 @@
 
             success: function (response, data) {
                 let chargers = response.items;
+                for(let x = 0 ; x < chargers.item.length ; x++){
+                    if(parseInt(chargers.item[x].chgerType) != parseInt(charger_type)){
+                        chargers.item.splice(x,1);
+                        x--;
+                    }
+                }
+
+                console.log(chargers.item);
+                if(Array.isArray(chargers.item) && chargers.item.length === 0){
+                    alert("일치하는 충전소가 없습니다");
+                }
+
+
 
                 let charger_bundle = chargers.item.reduce((result, item) => {
                     let {statId} = item;
@@ -503,7 +537,7 @@
                         position: position[i].latlng, // 마커를 표시할 위치
 
                     });
-                     var iwContent = `<div style="padding:7px;">${charger_bundle[charger_keys[i]][0].statNm}<br>${charger_bundle[charger_keys[i]][0].addr}</div>`, // 인포윈도우에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
+                    var iwContent = `<div style="padding:7px;">${charger_bundle[charger_keys[i]][0].statNm}<br>${charger_bundle[charger_keys[i]][0].addr}</div>`, // 인포윈도우에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
                         iwPosition = new kakao.maps.LatLng(charger_bundle[charger_keys[i]][0].lat, charger_bundle[charger_keys[i]][0].lng); //인포윈도우 표시 위치입니다
 
                     // 인포윈도우를 생성합니다
@@ -513,7 +547,7 @@
                     });
                     posinfowindow.push(infowindow);
                     posmarkers.push(marker);
-                    posinfowindow[i].open(map,marker);
+                    posinfowindow[i].open(map, marker);
                 }
 
                 panTo();
