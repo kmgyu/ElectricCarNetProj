@@ -169,14 +169,24 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (data && data.length > 0) {
-                const predictedGeneration = data.reduce((sum, d) => sum + (d.powergen || 0), 0);
-                document.getElementById('forecast-data').textContent = `예측 발전량: ${predictedGeneration.toFixed(2)} kW`;
+                // 오늘 날짜 (YYYYMMDD 형식)
+                const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                
+                // 오늘 데이터만 필터링
+                const todayData = data.filter(d => d.timestamp.startsWith(today));
+
+                // 발전량 합산
+                const predictedGeneration = todayData.reduce((sum, d) => sum + (d.powergen || 0), 0);
+                document.getElementById('forecast-data').textContent = `${predictedGeneration.toFixed(2)} kW`;
+            } else {
+                document.getElementById('forecast-data').textContent = '예측 데이터가 없습니다.';
             }
         } catch (error) {
             console.error('Error fetching forecast data:', error);
             document.getElementById('forecast-data').textContent = '예측 데이터를 불러오지 못했습니다.';
         }
     };
+
 
     // 초기 데이터 로드
     fetchRealTimeData();

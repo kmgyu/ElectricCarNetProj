@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>MAIN</title>
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <script>
+                alert("{{ message }}");
+            </script>
+        {% endif %}
+    {% endwith %}
+    {% include "navbar.html" %}
+    <div class="loginbox">
+        <form method="POST" id="authForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>         
+            <h2> 로그인</h2>
+            <!-- 아이디와 비밀번호 입력 폼 -->
+            <fieldset>
+                <legend>로그인 구역</legend>
+                <label for="id">아이디</label>    
+                <input type="text" id="id" name="id" placeholder="아이디를 입력해 주세요">
+                <label for="pw">비밀번호</label>
+                <input type="password" id="pw" name="pw" placeholder="비밀번호를 입력해 주세요">
+                <ul>
+                    <li><a href="{{ url_for('findpasswd') }}">비밀번호찾기</a></li>
+                    <li><a href="{{ url_for('register_post') }}">회원가입</a></li>
+                </ul>
+                <button type="submit">로그인</button>
+            </fieldset>  
+        </form>
+    </div>
+</body>
+</html>

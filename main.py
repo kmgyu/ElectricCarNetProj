@@ -8,7 +8,6 @@ import sqlite3
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
-import json
 import pytz
 import chromedriver_autoinstaller
 from selenium import webdriver
@@ -20,8 +19,49 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from time import sleep
+import sqlite3
+import os
+from flask import Flask, render_template, request, redirect, url_for, flash, make_response, session, jsonify
+from flask_mail import Mail, Message
+import hashlib
+import time
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity, unset_jwt_cookies, verify_jwt_in_request
+import string
+import random
+from flask_wtf.csrf import CSRFProtect
+
 
 app = Flask(__name__)
+
+# CSRF 오류 방지
+csrf = CSRFProtect()
+
+# 기능을 사용하기 위한 시크릿 키 설정
+app.secret_key = 'root'
+
+# sqlite연결하기
+current_directory = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(current_directory, "database.db")
+
+# 비밀번호 찾기 용 확인 이메일을 위한 사전준비
+mail = Mail(app)
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'dage8044@gmail.com'
+app.config['MAIL_PASSWORD'] = 'avdqyusbplgscqrd'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['SECRET_KEY'] = 'root'  # 시크릿 키 설정
+app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=5)  # 토큰 만료 시간 설정 (1시간)
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+
+# 보안을 위한 jwttoken 사용하기
+jwt = JWTManager(app)
+temporary_tokens = {}
+app.config['WTF_CSRF_ENABLED'] = True
+csrf.init_app(app)
+
 
 # 한국 시간대 설정
 KST = pytz.timezone("Asia/Seoul")
@@ -38,6 +78,10 @@ USER_CREDENTIALS = {
         "userPassword": "1234"
     }
 }
+def get_db():
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row  # 딕셔너리 형태로 데이터 사용 가능
+    return conn
 
 # SQLite 초기화
 def init_db():
@@ -249,10 +293,200 @@ def save_forecast_data(df):
             print(f"Error saving forecast data: {e}")
     conn.commit()
     conn.close()
+    
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        # 입력폼에서 아이디와 비밀번호를 받아옴
+        user_id = request.form['id']
+        password = request.form['pw']
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+        # 데이터베이스 검색 준비
+        connection = get_db()
+        cursor = connection.cursor()
+        
+        # 비밀번호 암호화 하기
+        password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+        # 데이터베이스에서 사용자 정보를 검색
+        cursor.execute('SELECT * FROM members WHERE id=? AND passwd=?', (user_id, password))
+        user_data = cursor.fetchone()
+
+
+        if user_data:
+            # 로그인 성공 시 JWT 토큰 발급
+            access_token = create_access_token(identity=user_id)
+
+            # 토큰을 브라우저에 쿠키로 설정하여 전달
+            response = redirect(url_for('success', username = user_id))
+            response.set_cookie('access_token_cookie', access_token, httponly=True)
+            
+            # db 연결 종료
+            connection.close()
+            return response
+        else:
+            # db에 사용자가 없을 경우
+            connection.close()
+            return render_template('Main.html', error="아이디 또는 비밀번호가 잘못되었습니다.")
+        
+    else:
+        # get 요청일 경우 토큰이 있다면 바로 게시판으로
+        # 아니라면 로그인화면으로
+        access_token = request.cookies.get('access_token_cookie')
+        if access_token:
+            verify_jwt_in_request() 
+            return redirect(url_for('success', username = get_jwt_identity()))
+        return render_template('Main.html')
+
+# 로그아웃 시 토큰 삭제
+@app.route('/logout', methods = ['GET','POST'])
+def logout():
+    session.pop('username', None)
+    response = make_response(redirect(url_for('index')))
+    response.delete_cookie('access_token_cookie')
+    return response
+
+@app.route('/register', methods=['GET', 'POST'])
+def register_post():
+    if request.method == 'POST':
+        #회원 가입 폼에서 값들 가져오기
+        user_id = request.form['regi_id']
+        password = request.form['regi_pw']
+        user_name = request.form['regi_name']
+        email = request.form['regi_email']
+        today = datetime.today().strftime("%Y-%m-%d")
+
+        #비밀번호 암호화
+        password = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        
+        # db사용 준비
+        connection = get_db()
+        cursor = connection.cursor()
+
+        # 아이디 중복 검사
+        cursor.execute('SELECT COUNT(*) FROM members WHERE id = ?', (user_id,))
+        if cursor.fetchone()[0] > 0:
+            connection.close()
+            return render_template('register.html', error="이미 존재하는 아이디입니다.")
+        
+        # 닉네임 중복 검사
+        cursor.execute('SELECT COUNT(*) FROM members WHERE name = ?', (user_name,))
+        if cursor.fetchone()[0] > 0:
+            connection.close()
+            return render_template('register.html', error="이미 존재하는 닉네임입니다.")
+
+        # 이메일 중복 검사
+        cursor.execute('SELECT COUNT(*) FROM members WHERE email = ?', (email,))
+        if cursor.fetchone()[0] > 0:
+            connection.close()
+            return render_template('register.html', error="이미 존재하는 이메일입니다.")
+
+        # 새로운 사용자 추가
+        cursor.execute('INSERT INTO members (id, passwd, name, email, last_connect) VALUES (?, ?, ?, ?, ?)', (user_id, password, user_name, email, today))
+        connection.commit()
+        connection.close()
+        return redirect(url_for('index'))
+    else:
+         return render_template('register.html')
+
+
+# 비밀번호 찾기
+@app.route('/findpasswd', methods=['GET', 'POST'])
+def findpasswd():
+    if request.method == 'POST':
+        # 입력 폼에서 정보 받아오기
+        user_id = request.form['regi_id']
+        user_name = request.form['regi_name']
+        email = request.form['regi_email']
+
+        # db 사용 준비
+        connection = get_db()
+        cursor = connection.cursor()
+
+        # 사용자 정보 검색
+        cursor.execute('SELECT * FROM members WHERE id = ? AND name = ? AND email = ?', (user_id, user_name, email))
+        user_data = cursor.fetchone()
+
+        if user_data:
+            # 회원이 맞는 경우 토큰과 함께 email로 링크를 보내줌
+            expiration_time = time.time() + 3600
+            token = generate_token()
+            temporary_tokens[token] = expiration_time
+            reset_url = f'http://orion.mokpo.ac.kr:8432/resetpasswd?token={token}'
+            msg = Message('Hello', sender='dage8044@gmail.com', recipients=[user_data['email']])
+            msg.body = f'비밀번호를 변경하려면 아래 링크를 클릭하세요 {reset_url}'
+            mail.send(msg)
+            flash("이메일로 전송이 완료되었습니다 이메일을 확인해주세요")
+            cursor.close()
+            return redirect(url_for('index'))
+        
+        else:
+            # db에서 검색이 되지 않는 경우
+            flash("일치하는 사용자 정보를 찾을 수 없습니다.")
+            return render_template('findpasswd.html')
+        
+    else:
+        # get 요청의 경우
+        return render_template('findpasswd.html')
+    
+# 이메일에 보낼 토큰을 만드는 함수
+def generate_token(token_length=16):
+    characters = string.ascii_letters + string.digits
+    token = ''.join(random.choice(characters) for _ in range(token_length))
+    return token
+
+#비밀번호 찾기 메일링크를 통해 접속
+#비밀번호 재설정 페이지
+@app.route('/resetpasswd', methods = ['GET','POST'])
+def resetpasswd():
+    if request.method == 'POST':
+        # 입력 폼에서 정보를 받아오기
+        user_id = request.form['regi_id']
+        user_name = request.form['regi_name']
+        password1 = request.form['resetpassword']
+        password2 = request.form['resetpassword2']
+
+        # db 사용 준비
+        connection = get_db()
+        cursor = connection.cursor()
+
+        # 비밀 번호와 다시 입력하기가 맞는 경우
+        if password1 == password2:
+            # 비밀번호를 암호화 후 db에 입력
+            password1 = hashlib.sha256(password1.encode('utf-8')).hexdigest()
+            cursor.execute('UPDATE members SET passwd = ? WHERE id = ? AND name = ?', (password1, user_id, user_name,))
+            connection.commit()
+            cursor.close()
+            flash("비밀번호 변경이 완료되었습니다")
+            return redirect(url_for('index'))
+        
+        # 비밀 번호와 다시 입력하기가 맞지 않는 경우
+        else:
+            flash("비밀번호가 일치하지 않습니다")
+            return render_template('resetpasswd.html')
+        
+    else:
+        # 이메일에 담겨있던 토큰을 검사
+        token = request.args.get('token')
+        
+        # 유표한 경우
+        if token in temporary_tokens and time.time() < temporary_tokens[token]:
+            return render_template('resetpasswd.html')
+        
+        # 유표하지 않은 경우
+        else:
+            flash('유효하지 않은 링크이거나 시간이 초과되었습니다')
+            return render_template('findpasswd.html')
+
+
+# 유저별 추천 데이터가 집약된 글들을 모은 페이지
+@app.route('/success/<username>', methods=['GET'])
+def success(username):
+    #보안을 위한 세션에 유저id로 저장하기
+    session['username'] = username
+
+    return render_template('success.html', name=username)
+
 
 @app.route('/api/bigtorage-data', methods=['GET'])
 def get_bigtorage_data():
@@ -321,7 +555,7 @@ def refresh_forecast():
 scheduler = BackgroundScheduler()
 scheduler.add_job(fetch_access_token, 'interval', minutes=14)
 scheduler.add_job(update_bigtorage_data, 'interval', seconds=10)
-scheduler.add_job(lambda: save_forecast_data(download_pvsim()), 'interval', minutes=3)
+scheduler.add_job(lambda: save_forecast_data(download_pvsim()), 'interval', hours=1)
 scheduler.start()
 
 if __name__ == '__main__':

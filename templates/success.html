@@ -8,6 +8,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <script>
+                alert("{{ messages[0] }}");
+            </script>
+        {% endif %}
+    {% endwith %}
+  {% include "navbar.html" %}
     <header>
         <h1>발전량 실시간 데이터</h1>
     </header>
@@ -16,23 +24,23 @@
             <h2>실시간 데이터</h2>
             <div class="data-grid">
                 <div class="data-card">
-                    <h3>발전량</h3>
+                    <h5>발전량</h5>
                     <p id="generation">-</p>
                 </div>
                 <div class="data-card">
-                    <h3>충전량</h3>
+                    <h5>충전량</h5>
                     <p id="charging">-</p>
                 </div>
                 <div class="data-card">
-                    <h3>방전량</h3>
+                    <h5>방전량</h5>
                     <p id="discharging">-</p>
                 </div>
                 <div class="data-card">
-                    <h3>부하량</h3>
+                    <h5>부하량</h5>
                     <p id="load">-</p>
                 </div>
                 <div class="data-card">
-                    <h3>금일 발전량 예측</h3>
+                    <h5>금일 발전량 예측</h5>
                     <p id="forecast-data">예측 데이터를 불러오는 중...</p>
                 </div>
                 
