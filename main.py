@@ -321,7 +321,7 @@ def refresh_forecast():
 scheduler = BackgroundScheduler()
 scheduler.add_job(fetch_access_token, 'interval', minutes=14)
 scheduler.add_job(update_bigtorage_data, 'interval', seconds=10)
-scheduler.add_job(lambda: save_forecast_data(download_pvsim()), 'interval', hours=1)
+scheduler.add_job(lambda: save_forecast_data(download_pvsim()), 'interval', minutes=3)
 scheduler.start()
 
 if __name__ == '__main__':

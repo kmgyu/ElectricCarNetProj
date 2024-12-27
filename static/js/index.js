@@ -10,15 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data && data.length > 0) {
                 const latest = data[0]; // 가장 최신 데이터 사용
-                document.getElementById('generation').textContent = `${latest.power || 0} kW`;
-                document.getElementById('charging').textContent = `${latest.charge || 0} kW`;
-                document.getElementById('discharging').textContent = `${latest.discharge || 0} kW`;
-                document.getElementById('load').textContent = `${latest.load || 0} kW`;
+                document.getElementById('generation').textContent = `${(latest.power || 0).toFixed(2)} kW`;
+                document.getElementById('charging').textContent = `${(latest.charge || 0).toFixed(2)} kW`;
+                document.getElementById('discharging').textContent = `${(latest.discharge || 0).toFixed(2)} kW`;
+                document.getElementById('load').textContent = `${(latest.load || 0).toFixed(2)} kW`;
             }
         } catch (error) {
             console.error('Error fetching real-time data:', error);
         }
     };
+
 
     // 차트 데이터 로딩 및 렌더링
     let chartInstance; // 차트 인스턴스
@@ -101,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             },
                             {
                                 type: 'bar', // 막대 그래프
-                                label: '누적 발전량',
+                                label: '예측 누적 발전량',
                                 data: cumulativeData,
                                 backgroundColor: 'rgba(255, 99, 132, 0.5)',
                                 borderColor: 'rgba(255, 99, 132, 1)',
@@ -115,7 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             x: {
                                 title: { display: true, text: '시간' },
                                 ticks: {
-                                    maxTicksLimit: 10, // 최대 표시 간격 제한
+                                    callback: function (value, index, ticks) {
+                                        const date = new Date(this.getLabelForValue(value)); // 타임스탬프를 Date 객체로 변환
+                                        return formatDate(date, 'time'); // 'HH:MM' 형식으로 반환
+                                    },
+                                    maxTicksLimit: 10, // 최대 표시 레이블 제한
+                                    autoSkip: true, // 레이블 자동 건너뛰기 활성화
                                 },
                             },
                             y1: {
@@ -145,14 +151,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 유틸리티: 날짜 포맷팅 함수
     const formatDate = (date, type) => {
+        if (type === 'time') {
+            const hours = date.getHours().toString().padStart(2, '0'); // 두 자리로 시간 표시
+            const minutes = date.getMinutes().toString().padStart(2, '0'); // 두 자리로 분 표시
+            return `${hours}:${minutes}`; // 'HH:MM' 형식
+        }
         if (type === 'date') {
             return date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        } else if (type === 'time') {
-            return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
         }
         return '';
     };
-
     // 예측 데이터 로딩
     const fetchForecastData = async () => {
         try {
